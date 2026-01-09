@@ -1,0 +1,2 @@
+"South Korean Won" "Japanese Yen" 0.11 2023.12.15
+"New Zealand Dollar" "US Dollar" 0.62 2023.12.15
