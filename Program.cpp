@@ -1,4 +1,7 @@
 // Maslakov Saveliy
+// KI24-07B
+// Variant - 15
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
