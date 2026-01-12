@@ -14,8 +14,7 @@ using std::string;
 using std::unique_ptr;
 
 const regex RegexCurrencyRateParser::kPattern(
-    R"(^\s*(\"([^\"]*)\"|([^ \"]+))\s+(\"([^\"]*)\"|([^ \"]+))"
-    R"(\s+([\d.]+)\s+(\d{4}\.\d{2}\.\d{2})\s*$)");
+    "^\\s*(\"([^\"]*)\"|([^ \"]+))\\s+(\"([^\"]*)\"|([^ \"]+))\\s+([\\d.]+)\\s+(\\d{4}\\.\\d{2}\\.\\d{2})\\s*$");
 
 CurrencyRate RegexCurrencyRateParser::parse(const string& line) const {
   smatch matches;

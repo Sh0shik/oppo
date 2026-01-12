@@ -3,6 +3,7 @@
 #include <fstream>
 #include <memory>
 #include <tuple>
+#include <vector>
 
 #include "currency_rate.h"
 #include "currency_rate_parser.h"

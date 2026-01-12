@@ -3,7 +3,7 @@
 #ifndef CURRENCY_RATE_VALIDATOR_H_
 #define CURRENCY_RATE_VALIDATOR_H_
 
-#include "currency_rate.h"
+#include <string>
 
 class CurrencyRateValidator {
 public:

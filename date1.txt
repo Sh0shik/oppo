@@ -1,3 +1,0 @@
-"US Dollar" "Euro" 0.85 2023.01.01
-"Euro" "British Pound" 0.88 2023.01.02
-"US Dollar" "British Pound" 0.75 2023.01.03

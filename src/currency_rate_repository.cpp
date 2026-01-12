@@ -3,10 +3,10 @@
 #include "currency_rate_repository.h"
 
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <iostream>
 
-using std::all_of;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -14,7 +14,6 @@ using std::function;
 using std::getline;
 using std::ifstream;
 using std::ios;
-using std::isspace;
 using std::make_unique;
 using std::move;
 using std::ofstream;
@@ -78,7 +77,8 @@ void MemoryCurrencyRateRepository::add_from_file(const string& filename) {
   while (getline(file, line)) {
     line_number++;
 
-    if (line.empty() || all_of(line.begin(), line.end(), ::isspace)) {
+    if (line.empty() || std::all_of(line.begin(), line.end(),
+        [](unsigned char c) { return std::isspace(c); })) {
       continue;
     }
 

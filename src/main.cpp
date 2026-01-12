@@ -9,6 +9,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "currency_rate.h"
 #include "currency_rate_parser.h"
@@ -31,6 +32,8 @@ using std::stod;
 using std::stoi;
 using std::string;
 using std::to_string;
+using std::unique_ptr;
+using std::vector;
 
 namespace {
 

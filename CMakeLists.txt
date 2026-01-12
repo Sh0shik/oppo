@@ -4,6 +4,9 @@ project(CurrencyRateManager)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Указываем директории с заголовочными файлами
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 # Основная программа
 add_executable(currency_rate_manager
         src/main.cpp
@@ -12,8 +15,6 @@ add_executable(currency_rate_manager
         src/currency_rate_repository.cpp
         src/currency_rate_validator.cpp
 )
-
-target_include_directories(currency_rate_manager PRIVATE include)
 
 # Модульные тесты
 enable_testing()

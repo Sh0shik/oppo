@@ -1,12 +1,15 @@
 // Copyright 2024 Maslakov Saveliy KI24-07B. All rights reserved.
 
 #include "currency_rate_validator.h"
+#include "currency_rate.h"
 
 #include <ctime>
 #include <regex>
+#include <cctype>
 
 using std::invalid_argument;
 using std::isdigit;
+using std::isalnum;
 using std::localtime;
 using std::regex;
 using std::regex_match;
