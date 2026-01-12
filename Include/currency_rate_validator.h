@@ -7,17 +7,17 @@
 
 class CurrencyRateValidator {
 public:
-  static bool is_valid_currency_name(const std::string& name);
-  static bool is_valid_rate(double rate);
-  static bool is_valid_date(const std::string& date);
+  static bool IsValidCurrencyName(const std::string& name);
+  static bool IsValidRate(double rate);
+  static bool IsValidDate(const std::string& date);
 
-  static void validate_currency_name(const std::string& name);
-  static void validate_rate(double rate);
-  static void validate_date(const std::string& date);
+  static void ValidateCurrencyName(const std::string& name);
+  static void ValidateRate(double rate);
+  static void ValidateDate(const std::string& date);
 
 private:
-  static bool is_leap_year(int year);
-  static int get_days_in_month(int year, int month);
+  static bool IsLeapYear(int year);
+  static int GetDaysInMonth(int year, int month);
 };
 
 #endif  // CURRENCY_RATE_VALIDATOR_H_

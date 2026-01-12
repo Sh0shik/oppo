@@ -60,23 +60,23 @@ CurrencyRate::CurrencyRate(const string& currency1, const string& currency2,
 }
 
 void CurrencyRate::Validate() const {
-  CurrencyRateValidator::validate_currency_name(currency1_);
-  CurrencyRateValidator::validate_currency_name(currency2_);
-  CurrencyRateValidator::validate_rate(rate_);
-  CurrencyRateValidator::validate_date(date_);
+  CurrencyRateValidator::ValidateCurrencyName(currency1_);
+  CurrencyRateValidator::ValidateCurrencyName(currency2_);
+  CurrencyRateValidator::ValidateRate(rate_);
+  CurrencyRateValidator::ValidateDate(date_);
 
   if (currency1_ == currency2_) {
-    throw CurrencyRateException("Валюты не могут быть одинаковыми");
+    throw CurrencyRateException("Currencies cannot be the same");
   }
 }
 
 string CurrencyRate::ToString() const {
   ostringstream oss;
   oss << std::fixed << setprecision(4)
-      << "Валюта 1: " << currency1_ << endl
-      << "Валюта 2: " << currency2_ << endl
-      << "Курс: " << rate_ << endl
-      << "Дата: " << date_;
+      << "Currency 1: " << currency1_ << endl
+      << "Currency 2: " << currency2_ << endl
+      << "Rate: " << rate_ << endl
+      << "Date: " << date_;
   return oss.str();
 }
 
@@ -116,7 +116,7 @@ bool CurrencyRate::operator==(const CurrencyRate& other) const {
          date_ == other.date_;
 }
 
-bool CurrencyRate::is_future_date() const {
+bool CurrencyRate::IsFutureDate() const {
   if (date_.length() != 10 || date_[4] != '.' || date_[7] != '.') {
     return false;
   }
@@ -154,7 +154,7 @@ bool CurrencyRate::is_future_date() const {
   return false;
 }
 
-bool CurrencyRate::is_valid_date(int year, int month, int day) {
+bool CurrencyRate::IsValidDate(int year, int month, int day) {
   if (year < 1900 || year > 2100) {
     return false;
   }

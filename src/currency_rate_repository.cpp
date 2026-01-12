@@ -27,30 +27,30 @@ MemoryCurrencyRateRepository::MemoryCurrencyRateRepository(
     unique_ptr<ICurrencyRateParser> parser)
     : parser_(move(parser)) {}
 
-void MemoryCurrencyRateRepository::add(const CurrencyRate& rate) {
+void MemoryCurrencyRateRepository::Add(const CurrencyRate& rate) {
   rates_.push_back(rate);
 }
 
-vector<CurrencyRate> MemoryCurrencyRateRepository::get_all() const {
+vector<CurrencyRate> MemoryCurrencyRateRepository::GetAll() const {
   return rates_;
 }
 
-size_t MemoryCurrencyRateRepository::count() const {
+size_t MemoryCurrencyRateRepository::Count() const {
   return rates_.size();
 }
 
-void MemoryCurrencyRateRepository::clear() {
+void MemoryCurrencyRateRepository::Clear() {
   rates_.clear();
 }
 
-void MemoryCurrencyRateRepository::sort_by_date() {
-  sort([](const CurrencyRate& a, const CurrencyRate& b) {
+void MemoryCurrencyRateRepository::SortByDate() {
+  Sort([](const CurrencyRate& a, const CurrencyRate& b) {
     return a < b;
   });
 }
 
-void MemoryCurrencyRateRepository::sort_by_currency() {
-  sort([](const CurrencyRate& a, const CurrencyRate& b) {
+void MemoryCurrencyRateRepository::SortByCurrency() {
+  Sort([](const CurrencyRate& a, const CurrencyRate& b) {
     if (a.currency1() != b.currency1()) {
       return a.currency1() < b.currency1();
     }
@@ -58,16 +58,16 @@ void MemoryCurrencyRateRepository::sort_by_currency() {
   });
 }
 
-void MemoryCurrencyRateRepository::sort(
+void MemoryCurrencyRateRepository::Sort(
     const function<bool(const CurrencyRate&, const CurrencyRate&)>& comparator) {
   std::sort(rates_.begin(), rates_.end(), comparator);
 }
 
-void MemoryCurrencyRateRepository::add_from_file(const string& filename) {
+void MemoryCurrencyRateRepository::AddFromFile(const string& filename) {
   ifstream file(filename);
 
   if (!file.is_open()) {
-    throw runtime_error("Не удалось открыть файл: " + filename);
+    throw runtime_error("Failed to open file: " + filename);
   }
 
   string line;
@@ -83,20 +83,20 @@ void MemoryCurrencyRateRepository::add_from_file(const string& filename) {
     }
 
     try {
-      if (parser_->can_parse(line)) {
-        CurrencyRate rate = parser_->parse(line);
+      if (parser_->CanParse(line)) {
+        CurrencyRate rate = parser_->Parse(line);
         rates_.push_back(rate);
         successfully_parsed++;
       } else {
-        cerr << "Предупреждение: строка " << line_number
-             << " имеет неверный формат и будет пропущена: "
+        cerr << "Warning: line " << line_number
+             << " has invalid format and will be skipped: "
              << line << endl;
       }
     } catch (const CurrencyRateException& e) {
-      cerr << "Ошибка при разборе строки " << line_number
+      cerr << "Error parsing line " << line_number
            << ": " << e.what() << endl;
     } catch (const std::exception& e) {
-      cerr << "Неожиданная ошибка при разборе строки " << line_number
+      cerr << "Unexpected error parsing line " << line_number
            << ": " << e.what() << endl;
     }
   }
@@ -104,15 +104,15 @@ void MemoryCurrencyRateRepository::add_from_file(const string& filename) {
   file.close();
 
   if (successfully_parsed == 0 && line_number > 0) {
-    cerr << "Внимание: ни одна строка не была успешно разобрана!" << endl;
+    cerr << "Warning: no lines were successfully parsed!" << endl;
   }
 }
 
-void MemoryCurrencyRateRepository::save_to_file(const string& filename) const {
+void MemoryCurrencyRateRepository::SaveToFile(const string& filename) const {
   ofstream file(filename);
 
   if (!file.is_open()) {
-    throw runtime_error("Не удалось открыть файл для записи: " + filename);
+    throw runtime_error("Failed to open file for writing: " + filename);
   }
 
   for (const auto& rate : rates_) {
@@ -122,12 +122,12 @@ void MemoryCurrencyRateRepository::save_to_file(const string& filename) const {
   file.close();
 }
 
-void MemoryCurrencyRateRepository::append_to_file(const string& filename,
-                                                  const CurrencyRate& rate) const {
+void MemoryCurrencyRateRepository::AppendToFile(const string& filename,
+                                                const CurrencyRate& rate) const {
   ofstream file(filename, ios::app);
 
   if (!file.is_open()) {
-    throw runtime_error("Не удалось открыть файл для добавления: " + filename);
+    throw runtime_error("Failed to open file for appending: " + filename);
   }
 
   file << rate.ToFileString() << endl;

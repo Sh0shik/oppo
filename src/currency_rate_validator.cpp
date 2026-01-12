@@ -20,7 +20,7 @@ using std::time_t;
 using std::tm;
 using std::to_string;
 
-bool CurrencyRateValidator::is_valid_currency_name(const string& name) {
+bool CurrencyRateValidator::IsValidCurrencyName(const string& name) {
   if (name.empty() || name.length() > 50) {
     return false;
   }
@@ -36,11 +36,11 @@ bool CurrencyRateValidator::is_valid_currency_name(const string& name) {
   return true;
 }
 
-bool CurrencyRateValidator::is_valid_rate(double rate) {
+bool CurrencyRateValidator::IsValidRate(double rate) {
   return rate > 0 && rate < 1000000;
 }
 
-bool CurrencyRateValidator::is_valid_date(const string& date) {
+bool CurrencyRateValidator::IsValidDate(const string& date) {
   static const regex kDatePattern(R"(^\d{4}\.\d{2}\.\d{2}$)");
 
   if (!regex_match(date, kDatePattern)) {
@@ -70,7 +70,7 @@ bool CurrencyRateValidator::is_valid_date(const string& date) {
       return false;
     }
 
-    int days_in_month = get_days_in_month(year, month);
+    int days_in_month = GetDaysInMonth(year, month);
     if (day < 1 || day > days_in_month) {
       return false;
     }
@@ -101,33 +101,32 @@ bool CurrencyRateValidator::is_valid_date(const string& date) {
   return true;
 }
 
-void CurrencyRateValidator::validate_currency_name(const string& name) {
-  if (!is_valid_currency_name(name)) {
-    throw InvalidCurrencyException("Название валюты '" + name +
-        "' содержит недопустимые символы или неверную длину");
+void CurrencyRateValidator::ValidateCurrencyName(const string& name) {
+  if (!IsValidCurrencyName(name)) {
+    throw InvalidCurrencyException("Currency name '" + name +
+        "' contains invalid characters or invalid length");
   }
 }
 
-void CurrencyRateValidator::validate_rate(double rate) {
-  if (!is_valid_rate(rate)) {
-    throw InvalidRateException("Курс " + to_string(rate) +
-        " выходит за допустимые пределы (0...1000000)");
+void CurrencyRateValidator::ValidateRate(double rate) {
+  if (!IsValidRate(rate)) {
+    throw InvalidRateException("Rate " + to_string(rate) +
+        " is outside valid limits (0...1000000)");
   }
 }
 
-void CurrencyRateValidator::validate_date(const string& date) {
-  if (!is_valid_date(date)) {
-    throw InvalidDateException("Дата '" + date +
-        "' имеет неверный формат, недопустимое значение "
-        "или находится в будущем");
+void CurrencyRateValidator::ValidateDate(const string& date) {
+  if (!IsValidDate(date)) {
+    throw InvalidDateException("Date '" + date +
+        "' has invalid format, invalid value, or is in the future");
   }
 }
 
-bool CurrencyRateValidator::is_leap_year(int year) {
+bool CurrencyRateValidator::IsLeapYear(int year) {
   return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
-int CurrencyRateValidator::get_days_in_month(int year, int month) {
+int CurrencyRateValidator::GetDaysInMonth(int year, int month) {
   static const int kDaysInMonth[] = {31, 28, 31, 30, 31, 30,
                                      31, 31, 30, 31, 30, 31};
 
@@ -135,7 +134,7 @@ int CurrencyRateValidator::get_days_in_month(int year, int month) {
     return 0;
   }
 
-  if (month == 2 && is_leap_year(year)) {
+  if (month == 2 && IsLeapYear(year)) {
     return 29;
   }
 

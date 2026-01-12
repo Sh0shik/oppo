@@ -16,12 +16,12 @@ using std::unique_ptr;
 const regex RegexCurrencyRateParser::kPattern(
     "^\\s*(\"([^\"]*)\"|([^ \"]+))\\s+(\"([^\"]*)\"|([^ \"]+))\\s+([\\d.]+)\\s+(\\d{4}\\.\\d{2}\\.\\d{2})\\s*$");
 
-CurrencyRate RegexCurrencyRateParser::parse(const string& line) const {
+CurrencyRate RegexCurrencyRateParser::Parse(const string& line) const {
   smatch matches;
 
   if (!regex_match(line, matches, kPattern)) {
     throw InvalidFormatException(
-        "Строка не соответствует ожидаемому формату: " + line);
+        "Line does not match expected format: " + line);
   }
 
   try {
@@ -38,15 +38,15 @@ CurrencyRate RegexCurrencyRateParser::parse(const string& line) const {
 
   } catch (const std::exception& e) {
     throw InvalidFormatException(
-        "Ошибка при разборе строки: " + string(e.what()));
+        "Error parsing line: " + string(e.what()));
   }
 }
 
-bool RegexCurrencyRateParser::can_parse(const string& line) const {
+bool RegexCurrencyRateParser::CanParse(const string& line) const {
   return regex_match(line, kPattern);
 }
 
 unique_ptr<ICurrencyRateParser>
-CurrencyRateParserFactory::create_default_parser() {
+CurrencyRateParserFactory::CreateDefaultParser() {
   return make_unique<RegexCurrencyRateParser>();
 }

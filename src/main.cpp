@@ -38,20 +38,20 @@ using std::vector;
 namespace {
 
 bool ShowAllRates(shared_ptr<ICurrencyRateRepository> repository) {
-  cout << "\n=== Все курсы валют ===" << endl;
-  auto rates = repository->get_all();
+  cout << "\n=== All Currency Rates ===" << endl;
+  auto rates = repository->GetAll();
 
   if (rates.empty()) {
-    cout << "Нет данных для отображения." << endl;
+    cout << "No data to display." << endl;
   } else {
-    cout << "Всего записей: " << rates.size() << endl;
+    cout << "Total records: " << rates.size() << endl;
     cout << "----------------------------------------" << endl;
     for (const auto& rate : rates) {
-      cout << "Валюта 1: " << rate.currency1() << endl;
-      cout << "Валюта 2: " << rate.currency2() << endl;
+      cout << "Currency 1: " << rate.currency1() << endl;
+      cout << "Currency 2: " << rate.currency2() << endl;
       cout << std::fixed << setprecision(4)
-           << "Курс: " << rate.rate() << endl;
-      cout << "Дата: " << rate.date() << endl;
+           << "Rate: " << rate.rate() << endl;
+      cout << "Date: " << rate.date() << endl;
       cout << "----------------------------------------" << endl;
     }
   }
@@ -59,19 +59,19 @@ bool ShowAllRates(shared_ptr<ICurrencyRateRepository> repository) {
 }
 
 bool SortByDateMenu(shared_ptr<ICurrencyRateRepository> repository) {
-  auto rates = repository->get_all();
+  auto rates = repository->GetAll();
 
   if (rates.empty()) {
-    cout << "Нет данных для сортировки." << endl;
+    cout << "No data to sort." << endl;
     return true;
   }
 
-  repository->sort_by_date();
-  cout << "\n=== Данные отсортированы по дате ===" << endl;
+  repository->SortByDate();
+  cout << "\n=== Data sorted by date ===" << endl;
 
-  auto sorted_rates = repository->get_all();
+  auto sorted_rates = repository->GetAll();
   for (const auto& rate : sorted_rates) {
-    cout << "Дата: " << rate.date()
+    cout << "Date: " << rate.date()
          << " | " << rate.currency1() << "/" << rate.currency2()
          << " = " << std::fixed << setprecision(4) << rate.rate() << endl;
   }
@@ -79,17 +79,17 @@ bool SortByDateMenu(shared_ptr<ICurrencyRateRepository> repository) {
 }
 
 bool SortByCurrencyMenu(shared_ptr<ICurrencyRateRepository> repository) {
-  auto rates = repository->get_all();
+  auto rates = repository->GetAll();
 
   if (rates.empty()) {
-    cout << "Нет данных для сортировки." << endl;
+    cout << "No data to sort." << endl;
     return true;
   }
 
-  repository->sort_by_currency();
-  cout << "\n=== Данные отсортированы по валютам ===" << endl;
+  repository->SortByCurrency();
+  cout << "\n=== Data sorted by currency ===" << endl;
 
-  auto sorted_rates = repository->get_all();
+  auto sorted_rates = repository->GetAll();
   for (const auto& rate : sorted_rates) {
     cout << rate.currency1() << "/" << rate.currency2()
          << " | " << std::fixed << setprecision(4) << rate.rate()
@@ -99,19 +99,19 @@ bool SortByCurrencyMenu(shared_ptr<ICurrencyRateRepository> repository) {
 }
 
 bool FilterByCurrencyMenu(shared_ptr<ICurrencyRateRepository> repository) {
-  auto rates = repository->get_all();
+  auto rates = repository->GetAll();
 
   if (rates.empty()) {
-    cout << "Нет данных для фильтрации." << endl;
+    cout << "No data to filter." << endl;
     return true;
   }
 
   string currency_filter;
-  cout << "Введите валюту для фильтрации (например, USD или EUR): ";
+  cout << "Enter currency to filter by (e.g., USD or EUR): ";
   getline(cin, currency_filter);
 
   if (currency_filter.empty()) {
-    cout << "Ошибка: название валюты не может быть пустым!" << endl;
+    cout << "Error: currency name cannot be empty!" << endl;
     return true;
   }
 
@@ -123,11 +123,11 @@ bool FilterByCurrencyMenu(shared_ptr<ICurrencyRateRepository> repository) {
     }
   }
 
-  cout << "\n=== Данные для валюты '" << currency_filter << "' ===" << endl;
-  cout << "Найдено записей: " << filtered.size() << endl;
+  cout << "\n=== Data for currency '" << currency_filter << "' ===" << endl;
+  cout << "Found records: " << filtered.size() << endl;
 
   if (filtered.empty()) {
-    cout << "Записей для указанной валюты не найдено." << endl;
+    cout << "No records found for specified currency." << endl;
   } else {
     for (const auto& data : filtered) {
       cout << data.currency1() << "/" << data.currency2()
@@ -139,21 +139,21 @@ bool FilterByCurrencyMenu(shared_ptr<ICurrencyRateRepository> repository) {
 }
 
 bool FilterByDateMenu(shared_ptr<ICurrencyRateRepository> repository) {
-  auto rates = repository->get_all();
+  auto rates = repository->GetAll();
 
   if (rates.empty()) {
-    cout << "Нет данных для фильтрации." << endl;
+    cout << "No data to filter." << endl;
     return true;
   }
 
   string date_filter;
-  cout << "Введите дату для фильтрации (ГГГГ.ММ.ДД): ";
+  cout << "Enter date to filter by (YYYY.MM.DD): ";
   getline(cin, date_filter);
 
   try {
-    CurrencyRateValidator::validate_date(date_filter);
+    CurrencyRateValidator::ValidateDate(date_filter);
   } catch (const CurrencyRateException& e) {
-    cout << "Ошибка: " << e.what() << endl;
+    cout << "Error: " << e.what() << endl;
     return true;
   }
 
@@ -164,11 +164,11 @@ bool FilterByDateMenu(shared_ptr<ICurrencyRateRepository> repository) {
     }
   }
 
-  cout << "\n=== Данные за дату '" << date_filter << "' ===" << endl;
-  cout << "Найдено записей: " << filtered.size() << endl;
+  cout << "\n=== Data for date '" << date_filter << "' ===" << endl;
+  cout << "Found records: " << filtered.size() << endl;
 
   if (filtered.empty()) {
-    cout << "Записей за указанную дату не найдено." << endl;
+    cout << "No records found for specified date." << endl;
   } else {
     for (const auto& data : filtered) {
       cout << data.currency1() << "/" << data.currency2()
@@ -194,7 +194,7 @@ string ReadString(const string& prompt, bool required = true) {
     }
 
     if (required && value.empty()) {
-      cout << "Ошибка: поле не может быть пустым!" << endl;
+      cout << "Error: field cannot be empty!" << endl;
     } else {
       break;
     }
@@ -205,21 +205,21 @@ string ReadString(const string& prompt, bool required = true) {
 double ReadRate() {
   double value;
   while (true) {
-    string input = ReadString("Введите курс обмена: ", true);
+    string input = ReadString("Enter exchange rate: ", true);
 
     try {
       value = stod(input);
 
       try {
-        CurrencyRateValidator::validate_rate(value);
+        CurrencyRateValidator::ValidateRate(value);
         break;
       } catch (const CurrencyRateException& e) {
-        cout << "Ошибка: " << e.what() << endl;
+        cout << "Error: " << e.what() << endl;
       }
     } catch (const std::invalid_argument&) {
-      cout << "Ошибка: введите корректное числовое значение!" << endl;
+      cout << "Error: enter a valid numeric value!" << endl;
     } catch (const std::out_of_range&) {
-      cout << "Ошибка: число вне допустимого диапазона!" << endl;
+      cout << "Error: number out of valid range!" << endl;
     }
   }
   return value;
@@ -228,13 +228,13 @@ double ReadRate() {
 string ReadDate() {
   string date;
   while (true) {
-    date = ReadString("Введите дату (ГГГГ.ММ.ДД): ", true);
+    date = ReadString("Enter date (YYYY.MM.DD): ", true);
 
     try {
-      CurrencyRateValidator::validate_date(date);
+      CurrencyRateValidator::ValidateDate(date);
       break;
     } catch (const CurrencyRateException& e) {
-      cout << "Ошибка: " << e.what() << endl;
+      cout << "Error: " << e.what() << endl;
     }
   }
   return date;
@@ -242,38 +242,38 @@ string ReadDate() {
 
 bool AddManualData(shared_ptr<ICurrencyRateRepository> repository,
                    const string& filename) {
-  cout << "\n=== Ручной ввод данных ===" << endl;
+  cout << "\n=== Manual Data Entry ===" << endl;
 
   try {
-    string currency1 = ReadString("Введите первую валюту: ", true);
-    CurrencyRateValidator::validate_currency_name(currency1);
+    string currency1 = ReadString("Enter first currency: ", true);
+    CurrencyRateValidator::ValidateCurrencyName(currency1);
 
-    string currency2 = ReadString("Введите вторую валюту: ", true);
-    CurrencyRateValidator::validate_currency_name(currency2);
+    string currency2 = ReadString("Enter second currency: ", true);
+    CurrencyRateValidator::ValidateCurrencyName(currency2);
 
     double rate = ReadRate();
     string date = ReadDate();
 
     CurrencyRate new_data(currency1, currency2, rate, date);
-    repository->add(new_data);
+    repository->Add(new_data);
 
     auto memory_repo = std::dynamic_pointer_cast<MemoryCurrencyRateRepository>(
         repository);
     if (memory_repo) {
-      memory_repo->append_to_file(filename, new_data);
+      memory_repo->AppendToFile(filename, new_data);
     }
 
-    cout << "\nДанные успешно добавлены!" << endl;
-    cout << "Валюта 1: " << new_data.currency1() << endl;
-    cout << "Валюта 2: " << new_data.currency2() << endl;
+    cout << "\nData successfully added!" << endl;
+    cout << "Currency 1: " << new_data.currency1() << endl;
+    cout << "Currency 2: " << new_data.currency2() << endl;
     cout << std::fixed << setprecision(4)
-         << "Курс: " << new_data.rate() << endl;
-    cout << "Дата: " << new_data.date() << endl;
+         << "Rate: " << new_data.rate() << endl;
+    cout << "Date: " << new_data.date() << endl;
 
   } catch (const CurrencyRateException& e) {
-    cout << "Ошибка при добавлении данных: " << e.what() << endl;
+    cout << "Error adding data: " << e.what() << endl;
   } catch (const std::exception& e) {
-    cout << "Неожиданная ошибка: " << e.what() << endl;
+    cout << "Unexpected error: " << e.what() << endl;
   }
 
   return true;
@@ -281,11 +281,11 @@ bool AddManualData(shared_ptr<ICurrencyRateRepository> repository,
 
 bool SaveToFileMenu(shared_ptr<ICurrencyRateRepository> repository) {
   string filename;
-  cout << "Введите имя файла для сохранения: ";
+  cout << "Enter filename to save: ";
   getline(cin, filename);
 
   if (filename.empty()) {
-    cout << "Ошибка: имя файла не может быть пустым!" << endl;
+    cout << "Error: filename cannot be empty!" << endl;
     return true;
   }
 
@@ -293,36 +293,36 @@ bool SaveToFileMenu(shared_ptr<ICurrencyRateRepository> repository) {
     auto memory_repo = std::dynamic_pointer_cast<MemoryCurrencyRateRepository>(
         repository);
     if (memory_repo) {
-      memory_repo->save_to_file(filename);
-      cout << "Данные успешно сохранены в файл: " << filename << endl;
+      memory_repo->SaveToFile(filename);
+      cout << "Data successfully saved to file: " << filename << endl;
     } else {
-      cout << "Ошибка: неподдерживаемая операция" << endl;
+      cout << "Error: operation not supported" << endl;
     }
   } catch (const std::exception& e) {
-    cout << "Ошибка при сохранении файла: " << e.what() << endl;
+    cout << "Error saving file: " << e.what() << endl;
   }
 
   return true;
 }
 
 bool ExitProgram(shared_ptr<ICurrencyRateRepository> repository) {
-  cout << "Выход из программы." << endl;
+  cout << "Exiting program." << endl;
   return false;
 }
 
 }  // namespace
 
 int main() {
-  setlocale(LC_ALL, "ru_RU.UTF-8");
-  cout << "=== Менеджер курсов валют ===" << endl;
+  setlocale(LC_ALL, "en_US.UTF-8");
+  cout << "=== Currency Rate Manager ===" << endl;
 
   string filename;
-  cout << "Введите имя файла с данными: ";
+  cout << "Enter data filename: ";
   getline(cin, filename);
 
   if (filename.empty()) {
-    cout << "Имя файла не указано. "
-         << "Будет использован файл по умолчанию: rates.txt" << endl;
+    cout << "Filename not specified. "
+         << "Using default file: rates.txt" << endl;
     filename = "rates.txt";
   }
 
@@ -330,12 +330,12 @@ int main() {
   auto repository = make_shared<MemoryCurrencyRateRepository>(move(parser));
 
   try {
-    repository->add_from_file(filename);
-    cout << "Успешно загружено записей из файла: "
-         << repository->count() << endl;
+    repository->AddFromFile(filename);
+    cout << "Successfully loaded records from file: "
+         << repository->Count() << endl;
   } catch (const std::exception& e) {
-    cout << "Предупреждение: " << e.what() << endl;
-    cout << "Начинаем работу с пустой базой данных." << endl;
+    cout << "Warning: " << e.what() << endl;
+    cout << "Starting with empty database." << endl;
   }
 
   int choice;
@@ -353,22 +353,22 @@ int main() {
   };
 
   do {
-    cout << "\n=== МЕНЮ ===" << endl;
-    cout << "1. Показать все курсы" << endl;
-    cout << "2. Отсортировать по дате" << endl;
-    cout << "3. Отсортировать по валютам" << endl;
-    cout << "4. Фильтровать по валюте" << endl;
-    cout << "5. Фильтровать по дате" << endl;
-    cout << "6. Добавить курс вручную" << endl;
-    cout << "7. Сохранить в файл" << endl;
-    cout << "8. Выйти" << endl;
-    cout << "Выберите действие: ";
+    cout << "\n=== MENU ===" << endl;
+    cout << "1. Show all rates" << endl;
+    cout << "2. Sort by date" << endl;
+    cout << "3. Sort by currency" << endl;
+    cout << "4. Filter by currency" << endl;
+    cout << "5. Filter by date" << endl;
+    cout << "6. Add rate manually" << endl;
+    cout << "7. Save to file" << endl;
+    cout << "8. Exit" << endl;
+    cout << "Choose action: ";
 
     string input;
     getline(cin, input);
 
     if (input.empty()) {
-      cout << "Ошибка: введите число от 1 до 8!" << endl;
+      cout << "Error: enter a number from 1 to 8!" << endl;
       continue;
     }
 
@@ -378,12 +378,12 @@ int main() {
       if (menu_functions.find(choice) != menu_functions.end()) {
         should_continue = menu_functions.at(choice)();
       } else {
-        cout << "Ошибка: неверный пункт меню! Выберите от 1 до 8." << endl;
+        cout << "Error: invalid menu item! Choose from 1 to 8." << endl;
       }
     } catch (const std::invalid_argument&) {
-      cout << "Ошибка: введите корректное число!" << endl;
+      cout << "Error: enter a valid number!" << endl;
     } catch (const std::exception& e) {
-      cout << "Неожиданная ошибка: " << e.what() << endl;
+      cout << "Unexpected error: " << e.what() << endl;
     }
 
   } while (should_continue);
