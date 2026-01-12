@@ -1,0 +1,8 @@
+//
+// Created by Admin on 13.01.2026.
+//
+
+#ifndef OPPO_CURRENCY_RATE_PARSER_H
+#define OPPO_CURRENCY_RATE_PARSER_H
+
+#endif // OPPO_CURRENCY_RATE_PARSER_H
