@@ -1,230 +1,199 @@
 // Maslakov Saveliy
 // KI24-07B
 // Variant - 15
-//
 
+#include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
+#include <regex>
+#include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-using namespace std;
-
 struct CurrencyRate {
-  string currency1;  // первая валюта (строка в кавычках)
-  string currency2;  // вторая валюта (строка в кавычках)
-  double rate;       // курс (дробное число)
-  string date;       // дата в формате гггг.мм.дд
+  std::string currency1;  // первая валюта (строка в кавычках)
+  std::string currency2;  // вторая валюта (строка в кавычках)
+  double rate;            // курс (дробное число)
+  std::string date;       // дата в формате гггг.мм.дд
 };
 
+// ==================== Sorting Functions ====================
+void sort_by_date(std::vector<CurrencyRate>& rates) {
+  std::sort(rates.begin(), rates.end(),
+            [](const CurrencyRate& a, const CurrencyRate& b) {
+              return a.date < b.date;
+            });
+}
+
+void sort_by_currency_name(std::vector<CurrencyRate>& rates) {
+  std::sort(rates.begin(), rates.end(),
+            [](const CurrencyRate& a, const CurrencyRate& b) {
+              if (a.currency1 != b.currency1) {
+                return a.currency1 < b.currency1;
+              }
+              return a.currency2 < b.currency2;
+            });
+}
+
 // ==================== Input/Output Functions ====================
-
-string ReadQuotedCurrencyFromStream(istringstream& iss) {
-  iss.get();  // Убираем '"'
-  string currency;
-  getline(iss, currency, '"');
-  return currency;
-}
-
-string ReadUnquotedCurrencyFromStream(istringstream& iss) {
-  string currency;
-  iss >> currency;
-  return currency;
-}
-
-string ReadCurrencyFromStream(istringstream& iss) {
-  iss >> ws;
-  char first_char = iss.peek();
-  if (first_char == '"') {
-    return ReadQuotedCurrencyFromStream(iss);
+CurrencyRate parse_currency_rate(const std::string& input_line) {
+  static const std::regex pattern(
+      R"(^\s*(\"([^\"]*)\"|([^ \"]+))\s+(\"([^\"]*)\"|([^ \"]+))\s+([\d.]+)\s+(\d{4}\.\d{2}\.\d{2})\s*$)");
+  std::smatch matches;
+  if (std::regex_match(input_line, matches, pattern)) {
+    CurrencyRate currency_rate;
+    // Currency1: either group 2 (quoted) or 3 (unquoted)
+    currency_rate.currency1 = matches[2].matched ? matches[2].str() : matches[3].str();
+    // Currency2: either group 5 (quoted) or 6 (unquoted)
+    currency_rate.currency2 = matches[5].matched ? matches[5].str() : matches[6].str();
+    currency_rate.rate = std::stod(matches[7].str());
+    currency_rate.date = matches[8].str();
+    return currency_rate;
   }
-  return ReadUnquotedCurrencyFromStream(iss);
-}
-
-double ReadRateFromStream(istringstream& iss) {
-  double rate;
-  iss >> rate;
-  return rate;
-}
-
-string ReadDateFromStream(istringstream& iss) {
-  string date;
-  iss >> date;
-  return date;
-}
-
-CurrencyRate ParseCurrencyRate(const string& input_line) {
-  istringstream input_stream(input_line);
-  CurrencyRate currency_rate;
-  currency_rate.currency1 = ReadCurrencyFromStream(input_stream);
-  currency_rate.currency2 = ReadCurrencyFromStream(input_stream);
-  currency_rate.rate = ReadRateFromStream(input_stream);
-  currency_rate.date = ReadDateFromStream(input_stream);
-  return currency_rate;
+  throw std::runtime_error("Invalid line format");
 }
 
 // ==================== File Operations ====================
-
-bool IsEmptyLine(const string& line) { return line.empty(); }
-
-bool OpenFileForReading(ifstream& input_file, const string& filename) {
-  input_file.open(filename);
-  if (!input_file.is_open()) {
-    cerr << "Error: Could not open file " << filename << " for reading" << endl;
-    return false;
-  }
-  return true;
+bool is_empty_line(const std::string& line) {
+  return line.empty();
 }
 
-bool OpenFileForWriting(ofstream& output_file, const string& filename) {
-  output_file.open(filename, ios::app);
-  if (!output_file.is_open()) {
-    cerr << "Error: Could not open file " << filename << " for writing" << endl;
-    return false;
-  }
-  return true;
-}
-
-void ProcessLine(const string& line, vector<CurrencyRate>& rates) {
-  if (IsEmptyLine(line)) {
+void process_line(const std::string& line, std::vector<CurrencyRate>& rates) {
+  if (is_empty_line(line)) {
     return;
   }
-
   try {
-    CurrencyRate currency_rate = ParseCurrencyRate(line);
+    CurrencyRate currency_rate = parse_currency_rate(line);
     rates.push_back(currency_rate);
   } catch (...) {
-    cerr << "Error parsing line: " << line << endl;
+    std::cerr << "Error parsing line: " << line << std::endl;
   }
 }
 
-vector<CurrencyRate> ReadAllCurrencyRatesFromFile(const string& filename) {
-  vector<CurrencyRate> rates;
-  ifstream input_file;
-
-  if (!OpenFileForReading(input_file, filename)) {
+std::vector<CurrencyRate> read_all_currency_rates_from_file(
+    const std::string& filename) {
+  std::vector<CurrencyRate> rates;
+  std::ifstream input_file(filename);
+  if (!input_file.is_open()) {
+    std::cerr << "Error: Could not open file " << filename << " for reading"
+              << std::endl;
     return rates;
   }
-
-  string line;
-  while (getline(input_file, line)) {
-    ProcessLine(line, rates);
+  std::string line;
+  while (std::getline(input_file, line)) {
+    process_line(line, rates);
   }
-
   input_file.close();
   return rates;
 }
 
-void WriteCurrencyRateToFile(ofstream& output_file,
-                             const CurrencyRate& currency_rate) {
+void write_currency_rate_to_file(std::ofstream& output_file,
+                                 const CurrencyRate& currency_rate) {
   // Write first currency (with quotes if contains spaces)
-  if (currency_rate.currency1.find(' ') != string::npos) {
+  if (currency_rate.currency1.find(' ') != std::string::npos) {
     output_file << "\"" << currency_rate.currency1 << "\" ";
   } else {
     output_file << currency_rate.currency1 << " ";
   }
-
   // Write second currency (with quotes if contains spaces)
-  if (currency_rate.currency2.find(' ') != string::npos) {
+  if (currency_rate.currency2.find(' ') != std::string::npos) {
     output_file << "\"" << currency_rate.currency2 << "\" ";
   } else {
     output_file << currency_rate.currency2 << " ";
   }
-
   // Write rate and date
-  output_file << fixed << setprecision(4) << currency_rate.rate << " "
-              << currency_rate.date << endl;
+  output_file << std::fixed << std::setprecision(4) << currency_rate.rate
+              << " " << currency_rate.date << std::endl;
 }
 
-bool AppendCurrencyRateToFile(const string& filename,
-                              const CurrencyRate& currency_rate) {
-  ofstream output_file;
-  if (!OpenFileForWriting(output_file, filename)) {
+bool append_currency_rate_to_file(const std::string& filename,
+                                  const CurrencyRate& currency_rate) {
+  std::ofstream output_file(filename, std::ios::app);
+  if (!output_file.is_open()) {
+    std::cerr << "Error: Could not open file " << filename << " for writing"
+              << std::endl;
     return false;
   }
-
-  WriteCurrencyRateToFile(output_file, currency_rate);
+  write_currency_rate_to_file(output_file, currency_rate);
   output_file.close();
   return true;
 }
 
 // ==================== Display Functions ====================
-
-void DisplaySingleCurrencyRate(const CurrencyRate& currency_rate) {
-  cout << "Currency 1: " << currency_rate.currency1 << endl;
-  cout << "Currency 2: " << currency_rate.currency2 << endl;
-  cout << fixed << setprecision(4);
-  cout << "Rate: " << currency_rate.rate << endl;
-  cout << "Date: " << currency_rate.date << endl;
-  cout << "---" << endl;
+void display_single_currency_rate(const CurrencyRate& currency_rate) {
+  std::cout << "Currency 1: " << currency_rate.currency1 << std::endl;
+  std::cout << "Currency 2: " << currency_rate.currency2 << std::endl;
+  std::cout << std::fixed << std::setprecision(4);
+  std::cout << "Rate: " << currency_rate.rate << std::endl;
+  std::cout << "Date: " << currency_rate.date << std::endl;
+  std::cout << "---" << std::endl;
 }
 
-void DisplayAllCurrencyRates(const vector<CurrencyRate>& rates) {
-  cout << "\nCurrency rates:" << endl;
-  cout << "===============" << endl;
-
+void display_all_currency_rates(const std::vector<CurrencyRate>& rates) {
+  std::cout << "\nCurrency rates:" << std::endl;
+  std::cout << "===============" << std::endl;
   for (const auto& currency_rate : rates) {
-    DisplaySingleCurrencyRate(currency_rate);
+    display_single_currency_rate(currency_rate);
   }
 }
 
-void DisplayCurrencyRatesCount(const vector<CurrencyRate>& rates) {
-  cout << "Total rates: " << rates.size() << endl;
+void display_currency_rates_count(const std::vector<CurrencyRate>& rates) {
+  std::cout << "Total rates: " << rates.size() << std::endl;
 }
 
 // ==================== User Input Functions ====================
-
-string GetInputFilenameFromUser() {
-  cout << "Enter filename: ";
-  string filename;
-  getline(cin, filename);
+std::string get_input_filename_from_user() {
+  std::cout << "Enter filename: ";
+  std::string filename;
+  std::getline(std::cin, filename);
   return filename;
 }
 
-string GetCurrencyInput(const string& prompt) {
-  string currency;
-  cout << prompt;
-  getline(cin, currency);
-
+std::string get_currency_input(const std::string& prompt) {
+  std::string currency;
+  std::cout << prompt;
+  std::getline(std::cin, currency);
   // Trim leading/trailing spaces
   size_t start = currency.find_first_not_of(" ");
   size_t end = currency.find_last_not_of(" ");
-  if (start != string::npos && end != string::npos) {
+  if (start != std::string::npos && end != std::string::npos) {
     currency = currency.substr(start, end - start + 1);
   }
-
   return currency;
 }
 
-double GetRateInput() {
+double get_rate_input() {
   double rate;
   while (true) {
-    cout << "Enter exchange rate: ";
-    string input;
-    getline(cin, input);
-
+    std::cout << "Enter exchange rate: ";
+    std::string input;
+    std::getline(std::cin, input);
     try {
-      rate = stod(input);
+      rate = std::stod(input);
       if (rate <= 0) {
-        cout << "Rate must be positive. Please try again." << endl;
+        std::cout << "Rate must be positive. Please try again." << std::endl;
         continue;
       }
       break;
-    } catch (const exception& e) {
-      cout << "Invalid input. Please enter a valid number." << endl;
+    } catch (const std::invalid_argument&) {
+      std::cout << "Invalid input: not a valid number. Please try again."
+                << std::endl;
+    } catch (const std::out_of_range&) {
+      std::cout << "Invalid input: number out of range. Please try again."
+                << std::endl;
     }
   }
   return rate;
 }
 
-string GetDateInput() {
-  string date;
+std::string get_date_input() {
+  std::string date;
   while (true) {
-    cout << "Enter date (YYYY.MM.DD): ";
-    getline(cin, date);
-
+    std::cout << "Enter date (YYYY.MM.DD): ";
+    std::getline(std::cin, date);
     // Simple date format validation
     if (date.length() == 10 && date[4] == '.' && date[7] == '.') {
       bool valid = true;
@@ -238,107 +207,108 @@ string GetDateInput() {
         break;
       }
     }
-    cout << "Invalid date format. Please use YYYY.MM.DD format." << endl;
+    std::cout << "Invalid date format. Please use YYYY.MM.DD format."
+              << std::endl;
   }
   return date;
 }
 
-CurrencyRate GetCurrencyRateFromUser() {
+CurrencyRate get_currency_rate_from_user() {
   CurrencyRate new_rate;
-
-  cout << "\n=== Enter new currency rate ===" << endl;
-  new_rate.currency1 = GetCurrencyInput("Enter first currency: ");
-  new_rate.currency2 = GetCurrencyInput("Enter second currency: ");
-  new_rate.rate = GetRateInput();
-  new_rate.date = GetDateInput();
-
+  std::cout << "\n=== Enter new currency rate ===" << std::endl;
+  new_rate.currency1 = get_currency_input("Enter first currency: ");
+  new_rate.currency2 = get_currency_input("Enter second currency: ");
+  new_rate.rate = get_rate_input();
+  new_rate.date = get_date_input();
   return new_rate;
 }
 
 // ==================== Menu Functions ====================
-
-void DisplayMenu() {
-  cout << "\n========= Currency Rate Manager =========" << endl;
-  cout << "1. View all currency rates" << endl;
-  cout << "2. Add new currency rate" << endl;
-  cout << "3. Show total count" << endl;
-  cout << "4. Exit" << endl;
-  cout << "=========================================" << endl;
-  cout << "Enter your choice (1-4): ";
+void display_menu() {
+  std::cout << "\n========= Currency Rate Manager =========" << std::endl;
+  std::cout << "1. View all currency rates" << std::endl;
+  std::cout << "2. Add new currency rate" << std::endl;
+  std::cout << "3. Show total count" << std::endl;
+  std::cout << "4. Sort by date" << std::endl;
+  std::cout << "5. Sort by currency name" << std::endl;
+  std::cout << "6. Exit" << std::endl;
+  std::cout << "=========================================" << std::endl;
+  std::cout << "Enter your choice (1-6): ";
 }
 
-int GetMenuChoice() {
-  string input;
-  getline(cin, input);
-
+int get_menu_choice() {
+  std::string input;
+  std::getline(std::cin, input);
   try {
-    int choice = stoi(input);
-    if (choice >= 1 && choice <= 4) {
+    int choice = std::stoi(input);
+    if (choice >= 1 && choice <= 6) {
       return choice;
     }
-  } catch (const exception& e) {
+  } catch (const std::exception&) {
     // Invalid input, will be handled by the caller
   }
-
-  return -1; // Invalid choice
+  return -1;  // Invalid choice
 }
 
-void HandleAddCurrencyRate(const string& filename, vector<CurrencyRate>& rates) {
-  CurrencyRate new_rate = GetCurrencyRateFromUser();
-
-  if (AppendCurrencyRateToFile(filename, new_rate)) {
+void handle_add_currency_rate(const std::string& filename,
+                              std::vector<CurrencyRate>& rates) {
+  CurrencyRate new_rate = get_currency_rate_from_user();
+  if (append_currency_rate_to_file(filename, new_rate)) {
     rates.push_back(new_rate);
-    cout << "\nCurrency rate added successfully!" << endl;
-    DisplaySingleCurrencyRate(new_rate);
+    std::cout << "\nCurrency rate added successfully!" << std::endl;
+    display_single_currency_rate(new_rate);
   } else {
-    cout << "\nFailed to save currency rate to file." << endl;
+    std::cout << "\nFailed to save currency rate to file." << std::endl;
   }
 }
 
 // ==================== Main Program ====================
-
 int main() {
-  string filename = GetInputFilenameFromUser();
-  vector<CurrencyRate> rates = ReadAllCurrencyRatesFromFile(filename);
-
+  std::string filename = get_input_filename_from_user();
+  std::vector<CurrencyRate> rates = read_all_currency_rates_from_file(filename);
   if (rates.empty()) {
-    cout << "No currency rates found or file is empty." << endl;
+    std::cout << "No currency rates found or file is empty." << std::endl;
   } else {
-    cout << "Successfully loaded " << rates.size() << " currency rates." << endl;
+    std::cout << "Successfully loaded " << rates.size() << " currency rates."
+              << std::endl;
   }
-
   bool running = true;
   while (running) {
-    DisplayMenu();
-    int choice = GetMenuChoice();
-
-    switch (choice) {
-      case 1:  // View all currency rates
-        if (rates.empty()) {
-          cout << "\nNo currency rates to display." << endl;
-        } else {
-          DisplayAllCurrencyRates(rates);
-        }
-        break;
-
-      case 2:  // Add new currency rate
-        HandleAddCurrencyRate(filename, rates);
-        break;
-
-      case 3:  // Show total count
-        DisplayCurrencyRatesCount(rates);
-        break;
-
-      case 4:  // Exit
-        cout << "\nExiting program. Goodbye!" << endl;
-        running = false;
-        break;
-
-      default:
-        cout << "\nInvalid choice. Please enter a number from 1 to 4." << endl;
-        break;
+    display_menu();
+    int choice = get_menu_choice();
+    static const std::unordered_map<int, std::function<void()>> actions = {
+        {1,
+         [&rates]() {
+           if (rates.empty()) {
+             std::cout << "\nNo currency rates to display." << std::endl;
+           } else {
+             display_all_currency_rates(rates);
+           }
+         }},
+        {2, [&filename, &rates]() { handle_add_currency_rate(filename, rates); }},
+        {3, [&rates]() { display_currency_rates_count(rates); }},
+        {4,
+         [&rates]() {
+           sort_by_date(rates);
+           std::cout << "\nSorted by date." << std::endl;
+         }},
+        {5,
+         [&rates]() {
+           sort_by_currency_name(rates);
+           std::cout << "\nSorted by currency name." << std::endl;
+         }},
+        {6,
+         [&running]() {
+           std::cout << "\nExiting program. Goodbye!" << std::endl;
+           running = false;
+         }}};
+    auto it = actions.find(choice);
+    if (it != actions.end()) {
+      it->second();
+    } else {
+      std::cout << "\nInvalid choice. Please enter a number from 1 to 6."
+                << std::endl;
     }
   }
-
   return 0;
 }
