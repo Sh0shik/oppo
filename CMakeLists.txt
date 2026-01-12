@@ -1,11 +1,34 @@
-cmake_minimum_required(VERSION 3.10)  # Минимальная версия CMake
+cmake_minimum_required(VERSION 3.10)
+project(CurrencyRateManager)
 
-project(Oppo)  # Название вашего проекта (можно изменить)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Создайте исполняемый файл из Program.cpp
-add_executable(Program Program.cpp)
+# Основная программа
+add_executable(currency_rate_manager
+        src/main.cpp
+        src/currency_rate.cpp
+        src/currency_rate_parser.cpp
+        src/currency_rate_repository.cpp
+        src/currency_rate_validator.cpp
+)
 
-# Если файлы данных нужны в build-директории, скопируйте их
-configure_file(date1.txt date1.txt COPYONLY)
-configure_file(date2.txt date2.txt COPYONLY)
-configure_file(date3.txt date3.txt COPYONLY)
+target_include_directories(currency_rate_manager PRIVATE include)
+
+# Модульные тесты
+enable_testing()
+
+find_package(GTest REQUIRED)
+
+add_executable(currency_rate_tests
+        tests/test.cpp
+        src/currency_rate.cpp
+        src/currency_rate_parser.cpp
+        src/currency_rate_repository.cpp
+        src/currency_rate_validator.cpp
+)
+
+target_include_directories(currency_rate_tests PRIVATE include)
+target_link_libraries(currency_rate_tests GTest::gtest GTest::gtest_main)
+
+add_test(NAME CurrencyRateTests COMMAND currency_rate_tests)
