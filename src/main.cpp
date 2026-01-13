@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 // Copyright 2024 Maslakov Saveliy KI24-07B. All rights reserved.
 
 #include <clocale>
@@ -188,7 +190,7 @@ string ReadString(const string& prompt, bool required = true) {
     size_t end = value.find_last_not_of(" \t");
 
     if (start == string::npos) {
-      value = "";
+      value.clear();
     } else {
       value = value.substr(start, end - start + 1);
     }
